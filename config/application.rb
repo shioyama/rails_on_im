@@ -31,17 +31,35 @@ module MyApp
         loader.do_not_eager_load(path) unless ActiveSupport::Dependencies.eager_load?(path)
       end
 
-      loader.enable_reloading
+      unless config.cache_classes
+        loader.enable_reloading
+
+        # Ensure that every time Zeitwerk is reloaded, Im is too.
+        Rails.autoloaders.main.extend(ImReloader)
+
+        loader.on_load do |_cpath, value, _abspath|
+          if value.is_a?(Class) && value.singleton_class < ActiveSupport::DescendantsTracker
+            ActiveSupport::Dependencies._autoloaded_tracked_classes << value
+          end
+        end
+      end
+
       loader.setup
+
+      # We need to add these explicitly because we removed them from autoload paths.
+      loader.autoloads.keys.each do |path|
+        if path.end_with?(".rb")
+          config.watchable_files << path
+        else
+          config.watchable_dirs[path] = [:rb]
+        end
+      end
 
       def loader.use_relative_model_naming?
         true
       end
 
       MyApp::Application = loader
-
-      # Ensure that every time Zeitwerk is reloaded, Im is too.
-      Rails.autoloaders.main.extend(ImReloader)
     end
 
     # Initialize configuration defaults for originally generated Rails version.
