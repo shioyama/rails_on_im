@@ -1,0 +1,9 @@
+<h1>New comment on "<%= @post.title %>"</h1>
+
+<%= render "form", post: @post, comment: @comment %>
+
+<br>
+
+<div>
+  <%= link_to "Back to post", post_path(@post) %>
+</div>

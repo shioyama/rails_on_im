@@ -1,6 +1,24 @@
 <p style="color: green"><%= notice %></p>
 
-<%= render @post %>
+<div id="<%= dom_id @post %>">
+  <h1>
+    <strong>Title:</strong>
+    <%= @post.title %>
+  </h1>
+
+  <% if @post.comments.any? %>
+    <h1>Comments</h1>
+
+    <% @post.comments.reverse_each do |comment| %>
+      <p><%= comment.content %> <br/> <small>Posted <%= time_ago_in_words(comment.created_at) %> ago.</small></p>
+    <% end %>
+  <% else %>
+    <p>No comments.</p>
+  <% end %>
+  <div>
+    <p><%= link_to "Post a comment", new_post_comment_path(@post) %></p>
+  </div>
+</div>
 
 <div>
   <%= link_to "Edit this post", edit_post_path(@post) %> |
