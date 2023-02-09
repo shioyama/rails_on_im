@@ -7,7 +7,29 @@ require "rails/all"
 Bundler.require(*Rails.groups)
 
 module MyApp
-  class Application < Rails::Application
+  class RailsApplication < Rails::Application
+    initializer :setup_application_loader, before: :setup_main_autoloader do
+      app_paths = ActiveSupport::Dependencies.autoload_paths.select do |path|
+        path.start_with?(Rails.root.to_s)
+      end
+      ActiveSupport::Dependencies.autoload_paths -= app_paths
+
+      loader = Im::Loader.new
+      loader.tag = "rails.main"
+      loader.inflector = Rails::Autoloaders::Inflector
+
+      app_paths.each do |path|
+        next unless File.directory?(path)
+
+        loader.push_dir(path)
+        loader.do_not_eager_load(path) unless ActiveSupport::Dependencies.eager_load?(path)
+      end
+
+      loader.enable_reloading
+      loader.setup
+      MyApp::Application = loader
+    end
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 
