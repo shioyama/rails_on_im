@@ -40,5 +40,10 @@ module MyApp
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # We need to disable this to avoid ActionPack trying to load
+    # ApplicationHelper when it sees app/helpers/application_helper.rb. This
+    # won't work since our ApplicationHelper is under MyApp::Application.
+    config.action_controller.include_all_helpers = false
   end
 end
