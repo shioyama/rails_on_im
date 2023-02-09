@@ -27,6 +27,11 @@ module MyApp
 
       loader.enable_reloading
       loader.setup
+
+      def loader.use_relative_model_naming?
+        true
+      end
+
       MyApp::Application = loader
     end
 
