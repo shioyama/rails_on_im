@@ -1,0 +1,2 @@
+class Kernel < ApplicationRecord
+end
