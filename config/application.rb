@@ -7,6 +7,12 @@ require "rails/all"
 Bundler.require(*Rails.groups)
 
 module MyApp
+  module ImReloader
+    def reload
+      super.tap { Application.reload }
+    end
+  end
+
   class RailsApplication < Rails::Application
     initializer :setup_application_loader, before: :setup_main_autoloader do
       app_paths = ActiveSupport::Dependencies.autoload_paths.select do |path|
@@ -33,6 +39,9 @@ module MyApp
       end
 
       MyApp::Application = loader
+
+      # Ensure that every time Zeitwerk is reloaded, Im is too.
+      Rails.autoloaders.main.extend(ImReloader)
     end
 
     # Initialize configuration defaults for originally generated Rails version.
