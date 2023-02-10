@@ -151,18 +151,22 @@ where the autoloaded constant `RestrictedAccess` is resolved at toplevel to
 `app/models/restricted_access.rb`, although the actual constant is hoisted
 under `MyApp::Application` (like all other autoloaded constants.)
 
-### Initializers
+### Initializers and Rake Tasks
 
 Initializers by default are loaded with `Kernel#load`, like routes. To ensure
 that `to_prepare` blocks in these intializers can also access application
 constants at toplevel, in our application subclass we simply patch
 `load` so that the original call is caught and modified to pass the application
-loader as second argument to `Kernel#load`.
+loader as second argument to `Kernel#load`. As a side benefit, this also allows
+application constants to be referenced in rake tasks (since rake tasks are
+loaded the same way.)
 
 A demonstration of this working is shown in
 [`config/initializers/allowed_ips.rb`](https://github.com/shioyama/rails_on_im/blob/main/config/initializers/allowed_ips.rb),
 where we reference `RestrictedAccess` in a `to_prepare` block. This is
-correctly resolved to `MyApp::Application::RestrictedAccess`.
+correctly resolved to `MyApp::Application::RestrictedAccess`. An example of a
+rake task, `:reset_tags` is also included to show that an application constant,
+`Tag`, is correctly resolved there as well.
 
 ### File path conventions
 
