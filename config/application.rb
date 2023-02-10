@@ -82,8 +82,9 @@ module MyApp
     end
 
     # We patch `load` to catch the call to `Kernel#load` so we can inject the
-    # application to ensure initializers are loaded under it. This way,
-    # constants can be referenced in initializers at toplevel.
+    # application to ensure initializers, rake tasks, and anything else loaded
+    # from the application context are loaded under it. This way, constants can
+    # be referenced in initializers, rake tasks, etc at toplevel.
     def load(initializer)
       super(initializer, Application)
     end
