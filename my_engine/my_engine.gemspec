@@ -1,8 +1,6 @@
-require_relative "lib/my_engine/version"
-
 Gem::Specification.new do |spec|
   spec.name        = "my_engine"
-  spec.version     = MyEngine::VERSION
+  spec.version     = "0.1.0"
   spec.authors     = ["TODO: Write your name"]
   spec.email       = ["TODO: Write your email address"]
   spec.homepage    = "TODO"
