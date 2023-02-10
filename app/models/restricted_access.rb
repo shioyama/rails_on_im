@@ -1,6 +1,14 @@
 module RestrictedAccess
-  def self.allow?(request)
-    request.local?
+  class << self
+    attr_reader :allowed_ips
+
+    def allow?(request)
+      request.local? || allowed_ips.include?(request.ip)
+    end
+
+    def allow_ip(ip)
+      (@allowed_ips ||= []) << ip
+    end
   end
 
   class RouteConstraint
