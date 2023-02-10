@@ -23,15 +23,27 @@ module MyApp
   end
 
   class RailsApplication < Rails::Application
+    # We need to create the loader here and assign it to the Application
+    # constant so that initializers can be loaded under it. Those initializers
+    # cannot actually access constants under it until the
+    # :setup_application_loader initializer has been run, but that's fine since
+    # you're not able to access Zeitwerk-loaded constants outside of
+    # `to_prepare` blocks anyway, and those are only run later in boot.
+    loader = Im::Loader.new
+    loader.tag = "rails.main"
+    loader.inflector = Rails::Autoloaders::Inflector
+
+    def loader.use_relative_model_naming?
+      true
+    end
+
+    ::MyApp::Application = loader
+
     initializer :setup_application_loader, before: :setup_main_autoloader do
       app_paths = ActiveSupport::Dependencies.autoload_paths.select do |path|
         path.start_with?(Rails.root.to_s)
       end
       ActiveSupport::Dependencies.autoload_paths -= app_paths
-
-      loader = Im::Loader.new
-      loader.tag = "rails.main"
-      loader.inflector = Rails::Autoloaders::Inflector
 
       app_paths.each do |path|
         next unless File.directory?(path)
@@ -63,16 +75,17 @@ module MyApp
           config.watchable_dirs[path] = [:rb]
         end
       end
-
-      def loader.use_relative_model_naming?
-        true
-      end
-
-      MyApp::Application = loader
     end
 
     def routes_reloader
       @routes_reloader ||= RoutesReloader.new
+    end
+
+    # We patch `load` to catch the call to `Kernel#load` so we can inject the
+    # application to ensure initializers are loaded under it. This way,
+    # constants can be referenced in initializers at toplevel.
+    def load(initializer)
+      super(initializer, Application)
     end
 
     # Initialize configuration defaults for originally generated Rails version.
