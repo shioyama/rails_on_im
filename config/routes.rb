@@ -6,6 +6,9 @@ Rails.application.routes.draw do
       resources :comments, only: [:new, :destroy, :create]
     end
 
+    # Demonstrate that routes load constants from application namespace.
+    get "ping", to: "ping#index", constraints: RestrictedAccess::RouteConstraint.new
+
     # Defines the root path route ("/")
     root "posts#index"
   end

@@ -59,20 +59,23 @@ easily see all application toplevel constants simply by calling `constants` on `
 ```ruby
 MyApp::Application.constants
 #=>
-[:Kernel,
+[:Post,
+ :RestrictedAccess,
+ :Kernel,
+ :Tag,
  :Comment,
  :ApplicationCable,
  :ApplicationController,
  :CommentsController,
+ :PingController,
  :PostsController,
  :ApplicationHelper,
  :CommentsHelper,
  :PostsHelper,
  :ApplicationJob,
  :ApplicationMailer,
- :ApplicationRecord,
- :Post]
-```
+ :ApplicationRecord]
+ ```
 
 `MyApp::Application` itself is an instance of `Im::Loader`, Im's loader for the
 application (see details below). The usual `Application` class, which points to
@@ -102,7 +105,7 @@ To get around this limitation, the demo app extracts application paths from
 an Im loader with `loader.push_dir`. The code for this is nearly identical to
 what Rails uses internally to assign autoload paths to the Zeitwerk loader.
 
-### Reloading
+### Reloading the Application
 
 Removing application paths from Rails' default `autoload_paths` has some
 secondary effects that need to be handled. The main one is that application
@@ -127,6 +130,26 @@ classes and their descendants to a registry
 (`ActiveSupport::Dependencies._autoloaded_tracked_classes`) when they are
 loaded. We simply add the same hook to the Im loader to ensure this works as
 expected.
+
+### Reloading Routes
+
+Reloading routes in Rails is done by an instance of
+`Rails::Application::RoutesReloader` returned by the `routes_reloader` method
+on the application. Routes reloading is independent of Zeitwerk and happens by
+calling `Kernel#load` on the routes path, which by default is `config/routes.rb`.
+
+The problem with this is that any application constant referenced at toplevel
+in the routes file will not resolve correctly, since `load` loads the file at
+toplevel. We handle this by subclassing `Rails::Application::RoutesReloader` in
+order to override `load` to pass the application loader (`MyApp::Application`)
+as the second argument, ensuring that constants referenced at toplevel in
+`config/routes.rb` will resolve to the application namespace.
+
+A demonstration of this can be found in
+[`config/routes.rb`](https://github.com/shioyama/rails_on_im/blob/main/config/routes.rb)
+where the autoloaded constant `RestrictedAccess` is resolved at toplevel to
+`app/models/restricted_access.rb`, although the actual constant is hoisted
+under `MyApp::Application` (like all other autoloaded constants.)
 
 ### File path conventions
 

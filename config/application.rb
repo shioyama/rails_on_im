@@ -13,6 +13,15 @@ module MyApp
     end
   end
 
+  # Define a custom routes reloader which loads route file(s) under the
+  # Application namespace. This allows application constants to be referenced
+  # in `config/routes.rb` (and any other route files) at toplevel.
+  class RoutesReloader < ::Rails::Application::RoutesReloader
+    def load(path)
+      super(path, Application)
+    end
+  end
+
   class RailsApplication < Rails::Application
     initializer :setup_application_loader, before: :setup_main_autoloader do
       app_paths = ActiveSupport::Dependencies.autoload_paths.select do |path|
@@ -60,6 +69,10 @@ module MyApp
       end
 
       MyApp::Application = loader
+    end
+
+    def routes_reloader
+      @routes_reloader ||= RoutesReloader.new
     end
 
     # Initialize configuration defaults for originally generated Rails version.
