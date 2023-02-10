@@ -151,9 +151,22 @@ where the autoloaded constant `RestrictedAccess` is resolved at toplevel to
 `app/models/restricted_access.rb`, although the actual constant is hoisted
 under `MyApp::Application` (like all other autoloaded constants.)
 
+### Initializers
+
+Initializers by default are loaded with `Kernel#load`, like routes. To ensure
+that `to_prepare` blocks in these intializers can also access application
+constants at toplevel, in our application subclass we simply patch
+`load` so that the original call is caught and modified to pass the application
+loader as second argument to `Kernel#load`.
+
+A demonstration of this working is shown in
+[`config/initializers/allowed_ips.rb`](https://github.com/shioyama/rails_on_im/blob/main/config/initializers/allowed_ips.rb),
+where we reference `RestrictedAccess` in a `to_prepare` block. This is
+correctly resolved to `MyApp::Application::RestrictedAccess`.
+
 ### File path conventions
 
-The other issue that we face with this novel configuration is that certain
+Another issue that we face with this novel configuration is that certain
 conventions around file and route naming break down due to the file structure.
 
 We have this:
