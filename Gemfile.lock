@@ -1,3 +1,9 @@
+PATH
+  remote: my_engine
+  specs:
+    my_engine (0.1.0)
+      rails (>= 7.0.4.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -188,6 +194,7 @@ DEPENDENCIES
   im (~> 0.2.2)
   importmap-rails
   jbuilder
+  my_engine!
   puma (~> 5.0)
   rails (~> 7.0.4, >= 7.0.4.2)
   sprockets-rails
