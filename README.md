@@ -225,6 +225,20 @@ With these changes, we have a working Rails application in which our code is
 written at toplevel, but all constants are defined under a single toplevel
 namespace.
 
+## Todo
+
+Unlike initializers and routes files, view files are not loaded but compiled.
+This makes it trickier to hoist them under the application namespace.
+
+I haven't figured this one out yet, so if you need to reference application
+constants from views, you currently need to fully qualify them, like this:
+
+```erb
+<%= form_with(model: [post, MyApp::Application::Comment.new]) do |form| %>
+```
+
+I hope to fix this in a later version of this app.
+
 ## Comments & Feedback
 
 This is very much an experimental work in progress. If you try it out and find
